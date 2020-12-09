@@ -1,6 +1,6 @@
 <?php
 $data = array_map( 'trim', $_POST );
-$chart_id = retrieve_asset_id( $data['chart'], 'chart' );
+$chart_id = retrieve_asset_id( $data['chart'], TABLE_CHART_NAME );
 $lines = array_map( 'trim', explode( "\n", $data['data'] ) );
 $data['entries'] = array();
 
@@ -8,11 +8,11 @@ $data['entries'] = array();
 foreach ( $lines as $line ) {
 	// expects 1. Daft Punk - Whatever
 	list( $position, $name ) = explode( '.', $line, 2 );
-	$album_id = retrieve_asset_id( $name, 'album' );
-	make_query( "INSERT INTO album_chart (album_id, chart_id, position) VALUES ({$album_id}, {$chart_id}, {$position})" );
+	$album_id = retrieve_asset_id( $name, TABLE_ALBUM_NAME );
+	make_query( "INSERT INTO %s (album_id, chart_id, position) VALUES ({$album_id}, {$chart_id}, {$position})", TABLE_ALBUM_CHART_NAME );
 }
 
-_memcache()->set( 'last_updated', $_SERVER['REQUEST_TIME'] );
+// _memcache()->set( 'last_updated', $_SERVER['REQUEST_TIME'] );
 
 header( "Location: " . $_SERVER['REQUEST_URI'] );
 exit();

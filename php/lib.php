@@ -1,11 +1,13 @@
 <?php
+date_default_timezone_set( 'America/New_York' );
+
 global $stats;
 $stats = array( 'mc_get' => 0, 'mc_set' => 0, 'select' => 0 );
 
 function _memcache() {
 	static $m = null;
 	if ( ! $m ) {
-		$m = new Memcache();
+		$m = new Memcached();
 		$m->addServer( '127.0.0.1', 11211 );
 		$m->connect( '127.0.0.1', 11211 );
 	}
@@ -25,14 +27,19 @@ function set_cache( $key, $value ) {
 	return _memcache()->set( $key . ':' . last_updated(), $value );
 }
 
-function last_updated() {
+function last_updated( $reset = false ) {
 	static $updated = null;
 
-	if ( $updated ) {
+	if ( $updated && ! $reset ) {
 		return $updated;
 	}
 
-	$updated = _memcache()->get( 'last_updated' );
+	if ( $reset ) {
+		$updated = false;
+	} else {
+		$updated = _memcache()->get( 'last_updated' );
+	}
+
 	if ( ! $updated ) {
 		$updated = $_SERVER['REQUEST_TIME'];
 		_memcache()->set( 'last_updated', $updated );
@@ -47,7 +54,7 @@ function make_query( $query ) {
 	static $dbh = null;
 	if ( ! $dbh ) {
 		// database
-		$dbh = new mysqli( '127.0.0.1', 'root', 'mypassword', 'charts' );
+		$dbh = new mysqli( '127.0.0.1', 'root', 'mypassword', DB_NAME );
 	}
 
 	$args = func_get_args();
@@ -59,21 +66,23 @@ function make_query( $query ) {
 		}
 		$s = new ReflectionFunction( 'sprintf' );
 		$query = $s->invokeArgs( array_merge( array( $query ), $escaped ) );
-		//echo $query, "\n";
 	}
+	error_log( $query );
 
 	if ( false !== strpos( $query, 'INSERT' ) ) {
 		$dbh->query( $query );
+		// last_updated( true );
 		return $dbh->insert_id;
 	} elseif ( false === strpos( $query, 'SELECT' ) ) {
 		$results = $dbh->query( $query );
+		// last_updated( true );
 		return $results;
 	} else {
 		$hash = md5( $query );
-		$cached = get_cache( $hash );
-		if ( $cached ) {
-			return $cached;
-		}
+		// $cached = get_cache( $hash );
+		// if ( is_array( $cached ) ) {
+		// 	return $cached;
+		// }
 
 		$stats['select']++;
 		$results = $dbh->query( $query );
@@ -82,18 +91,19 @@ function make_query( $query ) {
 			$rows[] = $result;
 		}
 
-		set_cache( $hash, $rows );
+		// set_cache( $hash, $rows );
 
 		return $rows;
 	}
 }
 
 function retrieve_asset_id( $name, $table = '' ) {
-	$lower = strtolower( $name );
-	$select = "SELECT id FROM $table WHERE LOWER(name) = '%s'";
+	$trimmed = trim( $name );
+	$lower = strtolower( $trimmed );
+	$select = "SELECT id FROM $table WHERE TRIM(LOWER(name)) = '%s'";
 	$asset_id = make_query( $select, $lower );
 	if ( empty( $asset_id ) ) {
-		return make_query( "INSERT INTO $table (name) VALUES ('%s')", $name );
+		return make_query( "INSERT INTO $table (name) VALUES ('%s')", $trimmed );
 	} else {
 		$row = array_shift( $asset_id );
 		return $row['id'];

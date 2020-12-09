@@ -1,5 +1,5 @@
 <?php
-$charts = make_query( "SELECT * FROM chart WHERE id = {$_GET['chart']}" );
+$charts = make_query( "SELECT * FROM %s WHERE id = {$_GET['chart']}", TABLE_CHART_NAME );
 foreach ( $charts as $chart ): ?>
 <div id="chart-<?php echo $chart['id'] ?>">
 	<h3><?php echo $chart['name'] ?></h3>
@@ -7,11 +7,11 @@ foreach ( $charts as $chart ): ?>
 	<?php
 		$rows = make_query(
 			"SELECT a.name AS album, ac.position
-			FROM album_chart ac
-			INNER JOIN album a ON a.id = ac.album_id
+			FROM %s ac
+			INNER JOIN %s a ON a.id = ac.album_id
 			WHERE ac.chart_id = {$chart['id']}
 			ORDER BY ac.position ASC
-		" );
+		", TABLE_ALBUM_CHART_NAME, TABLE_ALBUM_NAME );
 
 		foreach ( $rows as $row ): ?>
 		<tr>

@@ -20,7 +20,7 @@ foreach ( $sorts as $slug => $label ): ?>
 
 <p><strong>View an Individual List</strong>: <?php
 
-$charts = make_query( "SELECT * FROM chart" );
+$charts = make_query( sprintf( "SELECT * FROM %s", TABLE_CHART_NAME ) );
 
 foreach ( $charts as $chart ): ?>
 <a href="?chart=<?php echo $chart['id'] ?>" <?php
