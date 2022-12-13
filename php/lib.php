@@ -54,7 +54,7 @@ function make_query( $query ) {
 	static $dbh = null;
 	if ( ! $dbh ) {
 		// database
-		$dbh = new mysqli( '127.0.0.1', 'root', 'mypassword', DB_NAME );
+		$dbh = new mysqli( '127.0.0.1', 'root', '', DB_NAME );
 	}
 
 	$args = func_get_args();
@@ -103,7 +103,7 @@ function retrieve_asset_id( $name, $table = '' ) {
 	$select = "SELECT id FROM $table WHERE TRIM(LOWER(name)) = '%s'";
 	$asset_id = make_query( $select, $lower );
 	if ( empty( $asset_id ) ) {
-		return make_query( "INSERT INTO $table (name) VALUES ('%s')", $trimmed );
+		return make_query( "INSERT IGNORE INTO $table (name) VALUES ('%s')", $trimmed );
 	} else {
 		$row = array_shift( $asset_id );
 		return $row['id'];

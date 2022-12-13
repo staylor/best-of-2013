@@ -1,8 +1,8 @@
 <?php
 define( 'DB_NAME', 'charts' );
-define( 'TABLE_ALBUM_NAME', 'album_2020' );
-define( 'TABLE_CHART_NAME', 'chart_2020' );
-define( 'TABLE_ALBUM_CHART_NAME', 'album_chart_2020' );
+define( 'TABLE_ALBUM_NAME', 'album' );
+define( 'TABLE_CHART_NAME', 'chart' );
+define( 'TABLE_ALBUM_CHART_NAME', 'album_chart' );
 define( 'VIEWS', dirname( __FILE__ ) . '/views/' );
 
 require( dirname( __FILE__ ) . '/php/lib.php' );
@@ -15,7 +15,7 @@ endif;
 <!DOCTYPE html>
 <html>
 <head>
-<title>Best of 2020</title>
+<title>Best of 2022</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <style type="text/css">
 body {font-family: sans-serif;}
@@ -32,7 +32,7 @@ a.selected {color: red}
 </style>
 </head>
 <body>
-<h1>Best of 2020</h1>
+<h1>Best of 2022</h1>
 <?php
 require( VIEWS . 'nav.php' );
 
